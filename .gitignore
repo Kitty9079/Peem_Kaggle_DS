@@ -1,0 +1,71 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# ===========================
+# Virtual Environment
+# ===========================
+.venv/
+venv/
+env/
+ENV/
+
+# ===========================
+# Jupyter
+# ===========================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ===========================
+# IDE
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===========================
+# OS
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Kaggle Data (license + size)
+# ===========================
+data/cs-training.csv
+data/cs-test.csv
+data/sampleEntry.csv
+
+# ===========================
+# Intermediate artifacts (regenerable from notebook)
+# ===========================
+report/results/df_pre_fe.parquet
+report/results/df_post_fe.parquet
+report/results/predictions_*.csv
+
+# ===========================
+# Duplicate model (เก็บแค่ BEST_MODEL)
+# ===========================
+report/models/model_02_random_forest.pkl
+report/models/model_01_logistic_lasso.pkl
+report/models/model_03_lightgbm.pkl
+
+# ===========================
+# Environment variables
+# ===========================
+.env
+.env.local
+secrets.json
+
+# ===========================
+# Logs
+# ===========================
+*.log
+logs/

@@ -1,0 +1,301 @@
+{
+  "target_col": "default_2yr",
+  "n_samples": 150000,
+  "n_features": 10,
+  "imbalance": {
+    "level": "moderate_imbalance",
+    "minority_pct": 6.68,
+    "imbalance_ratio": 13.96,
+    "scale_pos_weight": 13.96
+  },
+  "recommended_metrics": [
+    "F1-score",
+    "ROC-AUC",
+    "PR-AUC",
+    "Recall"
+  ],
+  "feature_cols": [
+    "rev_util",
+    "age",
+    "past_due_30_59",
+    "debt_ratio",
+    "monthly_income",
+    "n_credit_lines",
+    "past_due_90",
+    "n_real_estate",
+    "past_due_60_89",
+    "n_dependents"
+  ],
+  "column_map": {
+    "SeriousDlqin2yrs": "default_2yr",
+    "RevolvingUtilizationOfUnsecuredLines": "rev_util",
+    "age": "age",
+    "NumberOfTime30-59DaysPastDueNotWorse": "past_due_30_59",
+    "DebtRatio": "debt_ratio",
+    "MonthlyIncome": "monthly_income",
+    "NumberOfOpenCreditLinesAndLoans": "n_credit_lines",
+    "NumberOfTimes90DaysLate": "past_due_90",
+    "NumberRealEstateLoansOrLines": "n_real_estate",
+    "NumberOfTime60-89DaysPastDueNotWorse": "past_due_60_89",
+    "NumberOfDependents": "n_dependents"
+  },
+  "feature_groups": {
+    "target": [
+      "default_2yr"
+    ],
+    "demographic": [
+      "age",
+      "n_dependents"
+    ],
+    "financial": [
+      "monthly_income",
+      "debt_ratio",
+      "rev_util"
+    ],
+    "credit_behavior": [
+      "n_credit_lines",
+      "n_real_estate"
+    ],
+    "delinquency": [
+      "past_due_30_59",
+      "past_due_60_89",
+      "past_due_90"
+    ]
+  },
+  "dq_issues": [
+    {
+      "check": "rev_util > 1.0",
+      "issue": "ใช้ credit เกิน limit (ผิดความหมาย)",
+      "count": "3321",
+      "pct": 2.21,
+      "severity": "🔴 High"
+    },
+    {
+      "check": "rev_util > 10",
+      "issue": "ค่าผิดธรรมชาติของ utilization",
+      "count": "241",
+      "pct": 0.16,
+      "severity": "🚨 Critical"
+    },
+    {
+      "check": "debt_ratio > 1.0",
+      "issue": "หนี้สูงกว่ารายได้ (อาจถูก หรือ data error)",
+      "count": "35137",
+      "pct": 23.42,
+      "severity": "🟡 Medium"
+    },
+    {
+      "check": "past_due_30_59 ∈ {96, 98}",
+      "issue": "Special code (น่าจะแปลว่า 'no data')",
+      "count": "269",
+      "pct": 0.18,
+      "severity": "🟠 Action needed"
+    },
+    {
+      "check": "past_due_60_89 ∈ {96, 98}",
+      "issue": "Special code (น่าจะแปลว่า 'no data')",
+      "count": "269",
+      "pct": 0.18,
+      "severity": "🟠 Action needed"
+    },
+    {
+      "check": "past_due_90 ∈ {96, 98}",
+      "issue": "Special code (น่าจะแปลว่า 'no data')",
+      "count": "269",
+      "pct": 0.18,
+      "severity": "🟠 Action needed"
+    },
+    {
+      "check": "age < 18 or > 100",
+      "issue": "อายุผิดธรรมชาติ",
+      "count": "14",
+      "pct": 0.01,
+      "severity": "🚨 Critical"
+    },
+    {
+      "check": "monthly_income == 0",
+      "issue": "รายได้ 0 บาท (ไม่มีงาน? หรือ data error?)",
+      "count": "1634",
+      "pct": 1.09,
+      "severity": "🟡 Medium"
+    }
+  ],
+  "fe_plan": {
+    "remove_rows": {
+      "condition": "age < 18 or age > 100",
+      "expected_n": 14,
+      "reason": "Data error — ไม่มีคนกู้เงินอายุ 0"
+    },
+    "special_code_handling": {
+      "columns": [
+        "past_due_30_59",
+        "past_due_60_89",
+        "past_due_90"
+      ],
+      "codes": [
+        96,
+        98
+      ],
+      "action": "1) สร้าง flag 'has_special_code' ก่อน, 2) แทนด้วย median",
+      "reason": "269 rows นี้ default rate = 54.65% (lift 8.18) → keep as signal!"
+    },
+    "winsorize": {
+      "rev_util": {
+        "upper": 1.0,
+        "method": "clip"
+      },
+      "monthly_income": {
+        "upper": "p99.5",
+        "method": "clip"
+      }
+    },
+    "create_flags": [
+      {
+        "name": "credit_maxed",
+        "expr": "rev_util >= 0.95",
+        "rationale": "rev_util spike at 1.0 + non-linear relationship from MI"
+      },
+      {
+        "name": "any_past_due",
+        "expr": "(past_due_30_59 > 0) | (past_due_60_89 > 0) | (past_due_90 > 0)",
+        "rationale": "Lift 3.33 — strongest binary signal"
+      },
+      {
+        "name": "has_special_code",
+        "expr": "past_due_30_59 >= 96",
+        "rationale": "Lift 8.18 — strongest signal of all"
+      },
+      {
+        "name": "income_missing",
+        "expr": "monthly_income.isnull()",
+        "rationale": "79.4% overlap with debt_ratio > 1 → separate signal"
+      },
+      {
+        "name": "income_zero",
+        "expr": "monthly_income == 0",
+        "rationale": "1,634 rows — possible unemployed signal"
+      }
+    ],
+    "impute": {
+      "monthly_income": "median per age_bin (NOT overall median)",
+      "n_dependents": 0
+    },
+    "transform": {
+      "monthly_income_log": "log1p(monthly_income)",
+      "debt_ratio_log": "log1p(debt_ratio) — for debt_ratio ≤ 1 only"
+    },
+    "derive_features": [
+      {
+        "name": "age_bin",
+        "method": "cut into [0,25,35,45,55,65,110]"
+      },
+      {
+        "name": "total_past_due",
+        "method": "past_due_30_59 + 60_89 + 90 (after clean)"
+      },
+      {
+        "name": "debt_per_credit_line",
+        "method": "debt_ratio / (n_credit_lines + 1)"
+      },
+      {
+        "name": "income_per_dependent",
+        "method": "monthly_income / (n_dependents + 1)"
+      }
+    ],
+    "drop_after_fe": [
+      "raw past_due_* (มี _clean version แล้ว)",
+      "raw monthly_income (มี _log version แล้ว)"
+    ]
+  },
+  "feature_inventory": {
+    "demographic": [
+      "age",
+      "age_25-35",
+      "age_35-45",
+      "age_45-55",
+      "age_55-65",
+      "age_65+"
+    ],
+    "financial": [
+      "monthly_income",
+      "monthly_income_log",
+      "debt_ratio",
+      "debt_ratio_log",
+      "rev_util",
+      "income_per_dependent"
+    ],
+    "credit": [
+      "n_credit_lines",
+      "n_real_estate",
+      "debt_per_credit_line"
+    ],
+    "delinquency": [
+      "past_due_30_59",
+      "past_due_60_89",
+      "past_due_90",
+      "total_past_due"
+    ],
+    "household": [
+      "n_dependents"
+    ],
+    "flags": [
+      "flag_credit_maxed",
+      "flag_any_past_due",
+      "flag_special_code",
+      "flag_income_missing",
+      "flag_income_zero"
+    ]
+  },
+  "all_features": [
+    "rev_util",
+    "age",
+    "past_due_30_59",
+    "debt_ratio",
+    "monthly_income",
+    "n_credit_lines",
+    "past_due_90",
+    "n_real_estate",
+    "past_due_60_89",
+    "n_dependents",
+    "flag_credit_maxed",
+    "flag_any_past_due",
+    "flag_special_code",
+    "flag_income_missing",
+    "flag_income_zero",
+    "monthly_income_log",
+    "debt_ratio_log",
+    "total_past_due",
+    "debt_per_credit_line",
+    "income_per_dependent",
+    "age_25-35",
+    "age_35-45",
+    "age_45-55",
+    "age_55-65",
+    "age_65+"
+  ],
+  "scale_pos_weight": 13.96,
+  "cv_folds": 5,
+  "scoring_metrics": [
+    "roc_auc",
+    "average_precision",
+    "f1",
+    "recall",
+    "precision"
+  ],
+  "lgb_best_threshold": 0.218,
+  "best_model": "Random Forest",
+  "best_cv_auc_mean": 0.8642,
+  "best_cv_auc_std": 0.0044,
+  "final_model": {
+    "name": "Random Forest",
+    "test_auc": 0.8708,
+    "test_gini": 0.7417,
+    "test_ks": 0.5885,
+    "test_f1": 0.3621,
+    "cv_auc_mean": 0.8642,
+    "cv_auc_std": 0.0044,
+    "n_features": 25,
+    "trained_on": "2026-06-21T15:52:49.522533",
+    "random_state": 42
+  }
+}
