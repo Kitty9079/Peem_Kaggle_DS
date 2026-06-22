@@ -361,22 +361,15 @@ RISK_ZONES = {
 
 ---
 
-## 📚 References
-
-1. He, H., & Garcia, E. A. (2009). Learning from imbalanced data. *IEEE Transactions on Knowledge and Data Engineering*, 21(9), 1263-1284.
-2. Lundberg, S. M., & Lee, S. I. (2017). A unified approach to interpreting model predictions. *NeurIPS*.
-3. Bank of Thailand. (2020). *Guidelines for Internal Rating Systems*.
-4. Basel Committee on Banking Supervision. (2006). *Basel II Framework*.
-
 ---
 
 ## 👤 Author
 
-**Kantinan Sukkert**  
+**Kantinan Sukpongtarin**  
 Risk Officer | Bank for Agriculture and Agricultural Cooperatives (BAAC)  
-M.M. (Finance), College of Management Mahidol University (CMMU) | GPA 3.88, Dean's List
+M.M. (Finance), College of Management Mahidol University (CMMU)
 
-- 📧 Email: kantinant2011@gmail.com
+
 - 💼 LinkedIn: [linkedin.com/in/kantinan](https://linkedin.com)
 - 🔗 GitHub: [@Kitty9079](https://github.com/Kitty9079)
 
