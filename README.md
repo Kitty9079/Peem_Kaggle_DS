@@ -8,7 +8,7 @@
 
 > **End-to-end ML pipeline** สำหรับทำนายความน่าจะเป็นที่ลูกค้าจะเกิด **90-day delinquency** ภายใน 2 ปี โดยเปรียบเทียบ 3 algorithms และเลือกตัวที่ดีที่สุดด้วย Cross-validation + SHAP explainability
 
-**Author:** Kantinan Sukkert | Risk Officer, BAAC  
+**Author:** Kantinan Sukpongtarin | Risk Officer, BAAC  
 **Project:** Module 5 — ML Pipeline Assignment  
 **Dataset:** [Give Me Some Credit (Kaggle)](https://www.kaggle.com/competitions/GiveMeSomeCredit)
 
